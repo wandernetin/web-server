@@ -38,12 +38,20 @@ app.get('/help', (req, res) => {
         name: 'Neto'
     });
 })
- app.get('/weather', (req, res) => {
+app.get('/weather', (req, res) => {
     res.send({
         location: 'Brisbane',
         forecast: 'Partly cloud'
     });
- });
+});
+
+app.get('*', (req, res) => {
+    res.render('404', {
+        title: '404',
+        errorMsg: 'Page not found.',
+        name: 'Neto'
+    });
+});
 
 app.listen(3000, () => {
     console.log('Server is up on port 3000.')
