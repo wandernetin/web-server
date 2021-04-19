@@ -2,6 +2,9 @@ const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
 
+const geocode = require('./utils/geocode');
+const forecast = require('./utils/forecast');
+
 const app = express();
 
 // Define paths for express template
@@ -38,10 +41,32 @@ app.get('/help', (req, res) => {
         name: 'Neto'
     });
 })
+
 app.get('/weather', (req, res) => {
-    res.send({
-        location: 'Brisbane',
-        forecast: 'Partly cloud'
+    var city = req.query.address;
+    if (!city) {
+        return res.send({
+            error: "You must provide an address."
+        });
+    }
+    geocode(city, (error, { center, place_name } = {}) => {
+        if (error)
+            return res.send({
+                error: error
+            });
+        forecast(center[1], center[0], (errorForecast, { weather_descriptions, temperature, feelslike, precip } = {}) => {
+            if (errorForecast)
+                return res.send({
+                    error: errorForecast
+                });
+            res.send({
+                location: place_name,
+                forecast: weather_descriptions[0],
+                temperature: 'It is currently ' + temperature + ' degrees out.',
+                feelslike: 'It feel likes ' + feelslike + ' degrees.',
+                precip: 'There is a ' + precip + '% chance of rain.'
+            });
+        });
     });
 });
 
